@@ -89,7 +89,17 @@ func (s ShapeType) String() string {
 	default:
 		return "UNKNOWN"
 	}
+}
 
+type MainFileRecordHeader struct {
+	RecordNumber  int32
+	ContentLength int32
+}
+
+func (h *MainFileRecordHeader) String() string {
+	str := fmt.Sprintf("RecordNumber %d\n", h.RecordNumber)
+	str += fmt.Sprintf("ContentLength %d\n", h.ContentLength)
+	return str
 }
 
 func NewMainFileHeaderFromReader(r io.Reader) (hdr *MainFileHeader, err error) {
@@ -101,7 +111,6 @@ func NewMainFileHeaderFromReader(r io.Reader) (hdr *MainFileHeader, err error) {
 	if fileCode != 9994 {
 		return nil, fmt.Errorf("invalid fileCode: %d", fileCode)
 	}
-
 	unused := make([]byte, 20)
 	var n int
 	if n, err = r.Read(unused); err != nil {
@@ -116,6 +125,9 @@ func NewMainFileHeaderFromReader(r io.Reader) (hdr *MainFileHeader, err error) {
 	}
 	if err = binary.Read(r, binary.LittleEndian, &hdr.Version); err != nil {
 		return
+	}
+	if hdr.Version != 1000 {
+		return nil, fmt.Errorf("Version must be 1000, is: %d", hdr.Version)
 	}
 	if err = binary.Read(r, binary.LittleEndian, &hdr.ShapeType); err != nil {
 		return
@@ -145,5 +157,16 @@ func NewMainFileHeaderFromReader(r io.Reader) (hdr *MainFileHeader, err error) {
 		return
 	}
 
+	return
+}
+
+func NewMainFileRecordHeaderFromReader(r io.Reader) (hdr *MainFileRecordHeader, err error) {
+	hdr = &MainFileRecordHeader{}
+	if err = binary.Read(r, binary.BigEndian, &hdr.RecordNumber); err != nil {
+		return
+	}
+	if err = binary.Read(r, binary.BigEndian, &hdr.ContentLength); err != nil {
+		return
+	}
 	return
 }
