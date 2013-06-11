@@ -234,12 +234,77 @@ type PolygonM struct {
 	PolyLineM
 }
 type PointZ struct {
+	X float64
+	Y float64
+	Z float64
+	M float64
+}
+type ZRange struct {
+	Zmin float64
+	Zmax float64
 }
 type MultiPointZ struct {
+	Box       Box
+	NumPoints int32
+	Points    []*Point
+	ZRange    ZRange
+	ZArray    []float64
+	MRange    MRange
+	MArray    []float64
 }
 type PolyLineZ struct {
+	Box       Box
+	NumParts  int32
+	NumPoints int32
+	Parts     []int32
+	Points    []*Point
+	ZRange    ZRange
+	ZArray    []float64
+	MRange    MRange
+	MArray    []float64
 }
 type PolygonZ struct {
+	PolyLineZ
 }
+
+type PartType int32
+
+const (
+	TRIANGLE_STRIP PartType = iota
+	TRIANGLE_FAN
+	OUTER_RING
+	INNER_RING
+	FIRST_RING
+	RING
+)
+
+func (p PartType) String() string {
+	switch p {
+	case TRIANGLE_STRIP:
+		return "TRIANGLE_STRIP"
+	case TRIANGLE_FAN:
+		return "TRIANGLE_FAN"
+	case OUTER_RING:
+		return "OUTER_RING"
+	case INNER_RING:
+		return "INNER_RING"
+	case FIRST_RING:
+		return "FIRST_RING"
+	case RING:
+		return "RING"
+	default:
+		return "UNKNOWN"
+	}
+}
+
 type MultiPatch struct {
+	Box       Box
+	NumParts  int32
+	NumPoints int32
+	Parts     []int32
+	PartTypes []PartType
+	Points    []*Point
+	ZRange    ZRange
+	MRange    MRange
+	MArray    []float64
 }
