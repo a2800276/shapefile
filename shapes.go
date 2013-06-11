@@ -197,7 +197,7 @@ type PolyLineM struct {
 }
 
 func ReadPolyLineM(r io.Reader) (pl *PolyLineM, err error) {
-	if err = readType(r, MULTI_POINT_M); err != nil {
+	if err = readType(r, POLY_LINE_M); err != nil {
 		return
 	}
 	pl = &PolyLineM{}
@@ -233,6 +233,42 @@ func ReadPolyLineM(r io.Reader) (pl *PolyLineM, err error) {
 type PolygonM struct {
 	PolyLineM
 }
+
+func ReadPolygonM(r io.Reader) (pg *PolygonM, err error) {
+	if err = readType(r, POLYGON_M); err != nil {
+		return
+	}
+	pg = &PolygonM{}
+	if err = binary.Read(r, L, pg.Box); err != nil {
+		return
+	}
+	if err = binary.Read(r, L, &pg.NumParts); err != nil {
+		return
+	}
+	if err = binary.Read(r, L, &pg.NumPoints); err != nil {
+		return
+	}
+	pg.Parts = make([]int32, pg.NumParts)
+	if err = binary.Read(r, L, pg.Parts); err != nil {
+		return
+	}
+	var point *Point
+	for i := (int32)(0); i != pg.NumPoints; i++ {
+		if point, err = ReadPoint(r); err != nil {
+			return
+		}
+		pg.Points = append(pg.Points, point)
+	}
+	if err = binary.Read(r, L, pg.MRange); err != nil {
+		return
+	}
+	pg.MArray = make([]float64, pg.NumPoints)
+
+	err = binary.Read(r, L, pg.MArray)
+	return
+}
+
+
 type PointZ struct {
 	X float64
 	Y float64
