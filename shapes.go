@@ -214,13 +214,11 @@ func ReadPolyLineM(r io.Reader) (pl *PolyLineM, err error) {
 	if err = binary.Read(r, L, pl.Parts); err != nil {
 		return
 	}
-	var point *Point
-	for i := (int32)(0); i != pl.NumPoints; i++ {
-		if point, err = ReadPoint(r); err != nil {
-			return
-		}
-		pl.Points = append(pl.Points, point)
+	pl.Points = make([]*Point, pl.NumPoints)
+		if err = binary.Read(r, L, pl.Points); err != nil {
+		return
 	}
+
 	if err = binary.Read(r, L, pl.MRange); err != nil {
 		return
 	}
@@ -252,12 +250,9 @@ func ReadPolygonM(r io.Reader) (pg *PolygonM, err error) {
 	if err = binary.Read(r, L, pg.Parts); err != nil {
 		return
 	}
-	var point *Point
-	for i := (int32)(0); i != pg.NumPoints; i++ {
-		if point, err = ReadPoint(r); err != nil {
-			return
-		}
-		pg.Points = append(pg.Points, point)
+	pg.Points = make([]*Point, pg.NumPoints)
+	if err = binary.Read(r, L, pg.Points); err != nil {
+		return
 	}
 	if err = binary.Read(r, L, pg.MRange); err != nil {
 		return
@@ -275,6 +270,17 @@ type PointZ struct {
 	Z float64
 	M float64
 }
+
+func ReadPointZ(r io.Reader)(p *PointZ, err error) {
+	if err = readType(r, POINT_Z); err != nil {
+		return
+	}
+	p = &PointZ{}
+	err = binary.Read(r, L, &p)
+	return
+
+}
+
 type ZRange struct {
 	Zmin float64
 	Zmax float64
