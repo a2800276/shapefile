@@ -69,8 +69,11 @@ func TestBinaryTesting(t *testing.T) {
 	println(test.A.Y)
 }
 
-func TestTest(t *testing.T) {
+func TestLoadShapefile(t *testing.T) {
 	file, _ := os.Open(testfile)
 	defer file.Close()
-	Parse(file)
+	s, _ := NewShapefile(file)
+	if 299 != len(s.records) {
+		t.Fail()
+	}
 }
