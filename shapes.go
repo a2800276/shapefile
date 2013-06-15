@@ -18,8 +18,7 @@ func readType(r io.Reader, t_expected ShapeType) error {
 	return nil
 }
 
-
-func RecordRecordContent(r io.Reader)(content RecordContent, err error) {
+func RecordRecordContent(r io.Reader) (content RecordContent, err error) {
 	var typ ShapeType
 	if err = binary.Read(r, L, &typ); err != nil {
 		return
@@ -27,20 +26,34 @@ func RecordRecordContent(r io.Reader)(content RecordContent, err error) {
 	// this implementation does not enforce the rule that all
 	// records in a file must be the same type.
 	switch typ {
-	case NULL_SHAPE: return ReadNull(r);
-	case POINT: return ReadPoint(r);
-	case POLY_LINE: return ReadPolyLine(r);
-	case POLYGON: return ReadPolygon(r);
-	case MULTI_POINT: return ReadMultiPoint(r);
-	case POINT_Z: return ReadPointZ(r);
-	case POLY_LINE_Z: return ReadPolyLineZ(r);
-	case POLYGON_Z: return ReadPolygonZ(r);
-	case MULTI_POINT_Z: return ReadMultiPointZ(r);
-	case POINT_M: return ReadPointM(r);
-	case POLY_LINE_M: return ReadPolyLineM(r);
-	case POLYGON_M: return ReadPolygonM(r);
-	case MULTI_POINT_M: return ReadMultiPointM(r)
-	case MULTI_PATCH: return ReadMultiPatch(r);
+	case NULL_SHAPE:
+		return ReadNull(r)
+	case POINT:
+		return ReadPoint(r)
+	case POLY_LINE:
+		return ReadPolyLine(r)
+	case POLYGON:
+		return ReadPolygon(r)
+	case MULTI_POINT:
+		return ReadMultiPoint(r)
+	case POINT_Z:
+		return ReadPointZ(r)
+	case POLY_LINE_Z:
+		return ReadPolyLineZ(r)
+	case POLYGON_Z:
+		return ReadPolygonZ(r)
+	case MULTI_POINT_Z:
+		return ReadMultiPointZ(r)
+	case POINT_M:
+		return ReadPointM(r)
+	case POLY_LINE_M:
+		return ReadPolyLineM(r)
+	case POLYGON_M:
+		return ReadPolygonM(r)
+	case MULTI_POINT_M:
+		return ReadMultiPointM(r)
+	case MULTI_PATCH:
+		return ReadMultiPatch(r)
 	default:
 		err = fmt.Errorf("unknown shape type: %d", typ)
 		return
@@ -60,12 +73,12 @@ type Point struct {
 	Y float64
 }
 
-func (p *Point) String()string{
+func (p *Point) String() string {
 	return fmt.Sprintf("X: %0.2f Y:%0.2f", p.X, p.Y)
 }
 
 func ReadPoint(r io.Reader) (p *Point, err error) {
-	err= readType(r, POINT)
+	err = readType(r, POINT)
 	p = &Point{}
 	err = binary.Read(r, binary.LittleEndian, p)
 	return
@@ -78,9 +91,9 @@ type Box struct {
 	Ymax float64
 }
 
-func (b *Box) String()string {
+func (b *Box) String() string {
 	return fmt.Sprintf("Xmin: %0.2f Xmax: %0.2f Ymin: %0.2f Ymax: %0.2f", b.Xmin, b.Xmax, b.Ymin, b.Ymax)
-	
+
 }
 
 type MultiPoint struct {
@@ -143,8 +156,7 @@ func ReadPolyLine(r io.Reader) (pl *PolyLine, err error) {
 
 }
 
-
-func (p *PolyLine) String()string{
+func (p *PolyLine) String() string {
 	str := fmt.Sprintf("Box: \n%s", p.Box.String())
 	str += fmt.Sprintf("NumParts: %d\n", p.NumParts)
 	str += fmt.Sprintf("NumPoints: %d\n", p.NumPoints)
@@ -161,8 +173,8 @@ type Polygon struct {
 	PolyLine
 }
 
-func (p *Polygon) String () string {
-		str := fmt.Sprintf("Box: %s\n", p.Box.String())
+func (p *Polygon) String() string {
+	str := fmt.Sprintf("Box: %s\n", p.Box.String())
 	str += fmt.Sprintf("NumParts: %d\n", p.NumParts)
 	str += fmt.Sprintf("NumPoints: %d\n", p.NumPoints)
 	for i, p := range p.Parts {
@@ -224,8 +236,8 @@ type MultiPointM struct {
 	Box       Box
 	NumPoints int32
 	Points    []*Point
-	MRange    MRange     // optional
-	MArray    []float64  // optional
+	MRange    MRange    // optional
+	MArray    []float64 // optional
 }
 
 func ReadMultiPointM(r io.Reader) (mp *MultiPointM, err error) {
@@ -258,8 +270,8 @@ type PolyLineM struct {
 	NumPoints int32
 	Parts     []int32
 	Points    []*Point
-	MRange    MRange     // optional
-	MArray    []float64  // optional
+	MRange    MRange    // optional
+	MArray    []float64 // optional
 }
 
 func ReadPolyLineM(r io.Reader) (pl *PolyLineM, err error) {
@@ -281,7 +293,7 @@ func ReadPolyLineM(r io.Reader) (pl *PolyLineM, err error) {
 		return
 	}
 	pl.Points = make([]*Point, pl.NumPoints)
-		if err = binary.Read(r, L, pl.Points); err != nil {
+	if err = binary.Read(r, L, pl.Points); err != nil {
 		return
 	}
 
@@ -329,7 +341,6 @@ func ReadPolygonM(r io.Reader) (pg *PolygonM, err error) {
 	return
 }
 
-
 type PointZ struct {
 	X float64
 	Y float64
@@ -337,7 +348,7 @@ type PointZ struct {
 	M float64
 }
 
-func ReadPointZ(r io.Reader)(p *PointZ, err error) {
+func ReadPointZ(r io.Reader) (p *PointZ, err error) {
 	if err = readType(r, POINT_Z); err != nil {
 		return
 	}
@@ -357,11 +368,11 @@ type MultiPointZ struct {
 	Points    []Point
 	ZRange    ZRange
 	ZArray    []float64
-	MRange    MRange     // optional
-	MArray    []float64  // optional
+	MRange    MRange    // optional
+	MArray    []float64 // optional
 }
 
-func ReadMultiPointZ(r io.Reader)(mp *MultiPointZ, err error) {
+func ReadMultiPointZ(r io.Reader) (mp *MultiPointZ, err error) {
 	mp = &MultiPointZ{}
 	if err = binary.Read(r, L, mp.Box); err != nil {
 		return
@@ -401,7 +412,7 @@ type PolyLineZ struct {
 	MArray    []float64 //optional
 }
 
-func ReadPolyLineZ(r io.Reader)(pl *PolyLineZ, err error) {
+func ReadPolyLineZ(r io.Reader) (pl *PolyLineZ, err error) {
 	pl = &PolyLineZ{}
 
 	if err = binary.Read(r, L, pl.Box); err != nil {
@@ -437,14 +448,13 @@ func ReadPolyLineZ(r io.Reader)(pl *PolyLineZ, err error) {
 	}
 	return
 
-
 }
 
 type PolygonZ struct {
 	PolyLineZ
 }
 
-func ReadPolygonZ(r io.Reader)(pg *PolygonZ, err error) {
+func ReadPolygonZ(r io.Reader) (pg *PolygonZ, err error) {
 	pg = &PolygonZ{}
 
 	if err = binary.Read(r, L, pg.Box); err != nil {
@@ -480,9 +490,7 @@ func ReadPolygonZ(r io.Reader)(pg *PolygonZ, err error) {
 	}
 	return
 
-
 }
-
 
 type PartType int32
 
@@ -526,7 +534,7 @@ type MultiPatch struct {
 	MArray    []float64 // optional
 }
 
-func ReadMultiPatch (r io.Reader) (mp *MultiPatch, err error) {
+func ReadMultiPatch(r io.Reader) (mp *MultiPatch, err error) {
 	mp = &MultiPatch{}
 	if err = binary.Read(r, L, mp.Box); err != nil {
 		return
@@ -545,7 +553,7 @@ func ReadMultiPatch (r io.Reader) (mp *MultiPatch, err error) {
 	if err = binary.Read(r, L, &mp.PartTypes); err != nil {
 		return
 	}
-	mp.Points = make([]Point, mp.NumPoints) 
+	mp.Points = make([]Point, mp.NumPoints)
 	if err = binary.Read(r, L, mp.Points); err != nil {
 		return
 	}

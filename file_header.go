@@ -102,7 +102,7 @@ func (h *MainFileRecordHeader) String() string {
 	return str
 }
 
-func Parse (r io.Reader) {
+func Parse(r io.Reader) {
 	hdr, _ := NewMainFileHeaderFromReader(r)
 	println(hdr.String())
 	h2, _ := NewMainFileRecordHeaderFromReader(r)

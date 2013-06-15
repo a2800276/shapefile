@@ -1,4 +1,3 @@
-
 package shapefile
 
 import (
@@ -6,12 +5,12 @@ import (
 )
 
 type Shapefile struct {
-	header *MainFileHeader
+	header  *MainFileHeader
 	records []*Record
 }
 
 type Record struct {
-	header *MainFileRecordHeader
+	header  *MainFileRecordHeader
 	content RecordContent
 }
 
@@ -30,13 +29,13 @@ func NewShapefile(rdr io.Reader) (s *Shapefile, err error) {
 	var rh *MainFileRecordHeader
 	var rec *Record
 	for {
-		if i <=0 {
+		if i <= 0 {
 			break
 		}
 		if rh, err = NewMainFileRecordHeaderFromReader(rdr); err != nil {
 			return
 		}
-		i = i-rh.ContentLength-4
+		i = i - rh.ContentLength - 4
 		rec = &Record{}
 		rec.header = rh
 		if rec.content, err = RecordRecordContent(rdr); err != nil {
