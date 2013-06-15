@@ -68,3 +68,9 @@ func TestBinaryTesting(t *testing.T) {
 	println(test.A.X)
 	println(test.A.Y)
 }
+
+func TestTest (t *testing.T) {
+	file, _ := os.Open(testfile)
+	defer file.Close()
+	Parse(file)
+}

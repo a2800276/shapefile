@@ -11,29 +11,61 @@ var B = binary.BigEndian
 
 func readType(r io.Reader, t_expected ShapeType) error {
 	var t ShapeType
-	binary.Read(r, binary.LittleEndian, t)
+	binary.Read(r, binary.LittleEndian, &t)
 	if t != t_expected {
 		return fmt.Errorf("unexpected type: %d expected: %d", t, t_expected)
 	}
 	return nil
 }
 
+
+func RecordRecordContent(r io.Reader)(content RecordContent, err error) {
+	var typ ShapeType
+	if err = binary.Read(r, L, &typ); err != nil {
+		return
+	}
+	// this implementation does not enforce the rule that all
+	// records in a file must be the same type.
+	switch typ {
+	case NULL_SHAPE: return ReadNull(r);
+	case POINT: return ReadPoint(r);
+	case POLY_LINE: return ReadPolyLine(r);
+	case POLYGON: return ReadPolygon(r);
+	case MULTI_POINT: return ReadMultiPoint(r);
+	case POINT_Z: return ReadPointZ(r);
+	case POLY_LINE_Z: return ReadPolyLineZ(r);
+	case POLYGON_Z: return ReadPolygonZ(r);
+	case MULTI_POINT_Z: return ReadMultiPointZ(r);
+	case POINT_M: return ReadPointM(r);
+	case POLY_LINE_M: return ReadPolyLineM(r);
+	case POLYGON_M: return ReadPolygonM(r);
+	case MULTI_POINT_M: return ReadMultiPointM(r)
+	case MULTI_PATCH: return ReadMultiPatch(r);
+	default:
+		err = fmt.Errorf("unknown shape type: %d", typ)
+		return
+	}
+}
+
 type Null struct {
 }
 
 func ReadNull(r io.Reader) (n *Null, err error) {
-	err = readType(r, NULL_SHAPE)
 	return &Null{}, nil
 }
 
 type Point struct {
-	_ ShapeType // Point is an embedded type
+	//_ ShapeType // Point is an embedded type
 	X float64
 	Y float64
 }
 
+func (p *Point) String()string{
+	return fmt.Sprintf("X: %0.2f Y:%0.2f", p.X, p.Y)
+}
+
 func ReadPoint(r io.Reader) (p *Point, err error) {
-	//err= readType(r, POINT)
+	err= readType(r, POINT)
 	p = &Point{}
 	err = binary.Read(r, binary.LittleEndian, p)
 	return
@@ -45,6 +77,12 @@ type Box struct {
 	Xmax float64
 	Ymax float64
 }
+
+func (b *Box) String()string {
+	return fmt.Sprintf("Xmin: %0.2f Xmax: %0.2f Ymin: %0.2f Ymax: %0.2f", b.Xmin, b.Xmax, b.Ymin, b.Ymax)
+	
+}
+
 type MultiPoint struct {
 	Box       Box
 	NumPoints int32
@@ -76,7 +114,7 @@ type PolyLine struct {
 	NumParts  int32
 	NumPoints int32
 	Parts     []int32
-	Points    []*Point
+	Points    []Point
 }
 
 func ReadPolyLine(r io.Reader) (pl *PolyLine, err error) {
@@ -97,7 +135,7 @@ func ReadPolyLine(r io.Reader) (pl *PolyLine, err error) {
 	if err = binary.Read(r, L, &pl.Parts); err != nil {
 		return
 	}
-	pl.Points = make([]*Point, pl.NumPoints)
+	pl.Points = make([]Point, pl.NumPoints)
 
 	err = binary.Read(r, L, &pl.Parts)
 
@@ -105,8 +143,36 @@ func ReadPolyLine(r io.Reader) (pl *PolyLine, err error) {
 
 }
 
+
+func (p *PolyLine) String()string{
+	str := fmt.Sprintf("Box: \n%s", p.Box.String())
+	str += fmt.Sprintf("NumParts: %d\n", p.NumParts)
+	str += fmt.Sprintf("NumPoints: %d\n", p.NumPoints)
+	for i, p := range p.Parts {
+		str += fmt.Sprintf("part %d : %d\n", i, p)
+	}
+	for i, p := range p.Points {
+		str += fmt.Sprintf("point %d : %s", i, p.String())
+	}
+	return str
+}
+
 type Polygon struct {
 	PolyLine
+}
+
+func (p *Polygon) String () string {
+		str := fmt.Sprintf("Box: %s\n", p.Box.String())
+	str += fmt.Sprintf("NumParts: %d\n", p.NumParts)
+	str += fmt.Sprintf("NumPoints: %d\n", p.NumPoints)
+	for i, p := range p.Parts {
+		str += fmt.Sprintf("part %d : %d\n", i, p)
+	}
+	for i, p := range p.Points {
+		str += fmt.Sprintf("point %d : %s\n", i, p.String())
+	}
+	return str
+
 }
 
 func ReadPolygon(r io.Reader) (pg *Polygon, err error) {
@@ -124,12 +190,12 @@ func ReadPolygon(r io.Reader) (pg *Polygon, err error) {
 		return
 	}
 	pg.Parts = make([]int32, pg.NumParts)
-	if err = binary.Read(r, L, &pg.Parts); err != nil {
+	if err = binary.Read(r, L, pg.Parts); err != nil {
 		return
 	}
-	pg.Points = make([]*Point, pg.NumPoints)
+	pg.Points = make([]Point, pg.NumPoints)
 
-	err = binary.Read(r, L, &pg.Parts)
+	err = binary.Read(r, L, pg.Points)
 
 	return
 
@@ -158,8 +224,8 @@ type MultiPointM struct {
 	Box       Box
 	NumPoints int32
 	Points    []*Point
-	MRange    MRange
-	MArray    []float64
+	MRange    MRange     // optional
+	MArray    []float64  // optional
 }
 
 func ReadMultiPointM(r io.Reader) (mp *MultiPointM, err error) {
@@ -192,8 +258,8 @@ type PolyLineM struct {
 	NumPoints int32
 	Parts     []int32
 	Points    []*Point
-	MRange    MRange
-	MArray    []float64
+	MRange    MRange     // optional
+	MArray    []float64  // optional
 }
 
 func ReadPolyLineM(r io.Reader) (pl *PolyLineM, err error) {
@@ -288,26 +354,135 @@ type ZRange struct {
 type MultiPointZ struct {
 	Box       Box
 	NumPoints int32
-	Points    []*Point
+	Points    []Point
 	ZRange    ZRange
 	ZArray    []float64
-	MRange    MRange
-	MArray    []float64
+	MRange    MRange     // optional
+	MArray    []float64  // optional
 }
+
+func ReadMultiPointZ(r io.Reader)(mp *MultiPointZ, err error) {
+	mp = &MultiPointZ{}
+	if err = binary.Read(r, L, mp.Box); err != nil {
+		return
+	}
+	if err = binary.Read(r, L, &mp.NumPoints); err != nil {
+		return
+	}
+	mp.Points = make([]Point, mp.NumPoints)
+	if err = binary.Read(r, L, &mp.Points); err != nil {
+		return
+	}
+	if err = binary.Read(r, L, mp.ZRange); err != nil {
+		return
+	}
+	mp.ZArray = make([]float64, mp.NumPoints)
+	if err = binary.Read(r, L, mp.ZArray); err != nil {
+		return
+	}
+	if err = binary.Read(r, L, mp.MRange); err != nil {
+		return
+	}
+	mp.MArray = make([]float64, mp.NumPoints)
+
+	err = binary.Read(r, L, mp.MArray)
+	return
+}
+
 type PolyLineZ struct {
 	Box       Box
 	NumParts  int32
 	NumPoints int32
 	Parts     []int32
-	Points    []*Point
+	Points    []Point
 	ZRange    ZRange
-	ZArray    []float64
-	MRange    MRange
-	MArray    []float64
+	ZArray    []float64 //optional
+	MRange    MRange    // optional
+	MArray    []float64 //optional
 }
+
+func ReadPolyLineZ(r io.Reader)(pl *PolyLineZ, err error) {
+	pl = &PolyLineZ{}
+
+	if err = binary.Read(r, L, pl.Box); err != nil {
+		return
+	}
+	if err = binary.Read(r, L, &pl.NumParts); err != nil {
+		return
+	}
+	if err = binary.Read(r, L, &pl.NumPoints); err != nil {
+		return
+	}
+
+	pl.Parts = make([]int32, pl.NumParts)
+	if err = binary.Read(r, L, pl.Parts); err != nil {
+		return
+	}
+	pl.Points = make([]Point, pl.NumPoints)
+
+	if err = binary.Read(r, L, pl.ZRange); err != nil {
+		return
+	}
+
+	pl.ZArray = make([]float64, pl.NumPoints)
+	if err = binary.Read(r, L, pl.ZArray); err != nil {
+		return
+	}
+	if err = binary.Read(r, L, pl.MRange); err != nil {
+		return
+	}
+	pl.MArray = make([]float64, pl.NumPoints)
+	if err = binary.Read(r, L, pl.MArray); err != nil {
+		return
+	}
+	return
+
+
+}
+
 type PolygonZ struct {
 	PolyLineZ
 }
+
+func ReadPolygonZ(r io.Reader)(pg *PolygonZ, err error) {
+	pg = &PolygonZ{}
+
+	if err = binary.Read(r, L, pg.Box); err != nil {
+		return
+	}
+	if err = binary.Read(r, L, &pg.NumParts); err != nil {
+		return
+	}
+	if err = binary.Read(r, L, &pg.NumPoints); err != nil {
+		return
+	}
+
+	pg.Parts = make([]int32, pg.NumParts)
+	if err = binary.Read(r, L, pg.Parts); err != nil {
+		return
+	}
+	pg.Points = make([]Point, pg.NumPoints)
+
+	if err = binary.Read(r, L, pg.ZRange); err != nil {
+		return
+	}
+
+	pg.ZArray = make([]float64, pg.NumPoints)
+	if err = binary.Read(r, L, pg.ZArray); err != nil {
+		return
+	}
+	if err = binary.Read(r, L, pg.MRange); err != nil {
+		return
+	}
+	pg.MArray = make([]float64, pg.NumPoints)
+	if err = binary.Read(r, L, pg.MArray); err != nil {
+		return
+	}
+	return
+
+
+}
+
 
 type PartType int32
 
@@ -345,8 +520,43 @@ type MultiPatch struct {
 	NumPoints int32
 	Parts     []int32
 	PartTypes []PartType
-	Points    []*Point
-	ZRange    ZRange
-	MRange    MRange
-	MArray    []float64
+	Points    []Point
+	ZRange    ZRange    // optional
+	MRange    MRange    // optional
+	MArray    []float64 // optional
+}
+
+func ReadMultiPatch (r io.Reader) (mp *MultiPatch, err error) {
+	mp = &MultiPatch{}
+	if err = binary.Read(r, L, mp.Box); err != nil {
+		return
+	}
+	if err = binary.Read(r, L, &mp.NumParts); err != nil {
+		return
+	}
+	if err = binary.Read(r, L, &mp.NumPoints); err != nil {
+		return
+	}
+	mp.Parts = make([]int32, mp.NumParts)
+	if err = binary.Read(r, L, &mp.Parts); err != nil {
+		return
+	}
+	mp.PartTypes = make([]PartType, mp.NumParts)
+	if err = binary.Read(r, L, &mp.PartTypes); err != nil {
+		return
+	}
+	mp.Points = make([]Point, mp.NumPoints) 
+	if err = binary.Read(r, L, mp.Points); err != nil {
+		return
+	}
+	if err = binary.Read(r, L, mp.ZRange); err != nil {
+		return
+	}
+	if err = binary.Read(r, L, mp.MRange); err != nil {
+		return
+	}
+	mp.MArray = make([]float64, mp.NumPoints)
+	err = binary.Read(r, L, mp.NumPoints)
+	return
+
 }
