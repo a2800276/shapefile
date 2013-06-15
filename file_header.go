@@ -102,22 +102,6 @@ func (h *MainFileRecordHeader) String() string {
 	return str
 }
 
-func Parse(r io.Reader) {
-	hdr, _ := NewMainFileHeaderFromReader(r)
-	println(hdr.String())
-	h2, _ := NewMainFileRecordHeaderFromReader(r)
-	println(h2.String())
-	pg, _ := ReadPolygon(r)
-	println(pg.String())
-	h2, _ = NewMainFileRecordHeaderFromReader(r)
-	println(h2.String())
-	pg, _ = ReadPolygon(r)
-	println(pg.String())
-	h2, _ = NewMainFileRecordHeaderFromReader(r)
-	println(h2.String())
-	pg, _ = ReadPolygon(r)
-	println(pg.String())
-}
 
 func NewMainFileHeaderFromReader(r io.Reader) (hdr *MainFileHeader, err error) {
 
