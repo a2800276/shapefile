@@ -102,7 +102,6 @@ func (h *MainFileRecordHeader) String() string {
 	return str
 }
 
-
 func NewMainFileHeaderFromReader(r io.Reader) (hdr *MainFileHeader, err error) {
 
 	var fileCode int32

@@ -9,7 +9,6 @@ import (
 var L = binary.LittleEndian
 var B = binary.BigEndian
 
-
 func RecordRecordContent(r io.Reader) (content RecordContent, err error) {
 	var typ ShapeType
 	if err = binary.Read(r, L, &typ); err != nil {
@@ -88,7 +87,7 @@ func (b *Box) String() string {
 }
 
 // reads a succession of numPoints, Point[numPoints]...
-func readNumPoints(r io.Reader)(points []Point, err error) {
+func readNumPoints(r io.Reader) (points []Point, err error) {
 	var i int32
 	if err = binary.Read(r, L, &i); err != nil {
 		return
@@ -116,10 +115,9 @@ func ReadMultiPoint(r io.Reader) (mp *MultiPoint, err error) {
 	return
 }
 
-
-func readPartsPoints (r io.Reader)(parts []int32, points[]Point, err error) {
+func readPartsPoints(r io.Reader) (parts []int32, points []Point, err error) {
 	var nprts int32
-	var npts  int32
+	var npts int32
 	if err = binary.Read(r, L, &nprts); err != nil {
 		return
 	}
@@ -128,13 +126,14 @@ func readPartsPoints (r io.Reader)(parts []int32, points[]Point, err error) {
 	}
 
 	parts = make([]int32, nprts)
-	if err = binary.Read(r,L,parts); err != nil {
+	if err = binary.Read(r, L, parts); err != nil {
 		return
 	}
 	points = make([]Point, npts)
-	err = binary.Read(r,L, points)
+	err = binary.Read(r, L, points)
 	return
 }
+
 type PolyLine struct {
 	Box       Box
 	NumParts  int32
@@ -213,10 +212,10 @@ type MRange struct {
 	Mmax float64
 }
 type MultiPointM struct {
-	Box       Box
-	Points    []Point
-	MRange    MRange    // optional
-	MArray    []float64 // optional
+	Box    Box
+	Points []Point
+	MRange MRange    // optional
+	MArray []float64 // optional
 }
 
 func ReadMultiPointM(r io.Reader) (mp *MultiPointM, err error) {
@@ -224,7 +223,7 @@ func ReadMultiPointM(r io.Reader) (mp *MultiPointM, err error) {
 	if err = binary.Read(r, L, &mp.Box); err != nil {
 		return
 	}
-	
+
 	if mp.Points, err = readNumPoints(r); err != nil {
 		return
 	}
@@ -239,11 +238,11 @@ func ReadMultiPointM(r io.Reader) (mp *MultiPointM, err error) {
 }
 
 type PolyLineM struct {
-	Box       Box
-	Parts     []int32
-	Points    []Point
-	MRange    MRange    // optional
-	MArray    []float64 // optional
+	Box    Box
+	Parts  []int32
+	Points []Point
+	MRange MRange    // optional
+	MArray []float64 // optional
 }
 
 func ReadPolyLineM(r io.Reader) (pl *PolyLineM, err error) {
@@ -306,12 +305,12 @@ type ZRange struct {
 	Zmax float64
 }
 type MultiPointZ struct {
-	Box       Box
-	Points    []Point
-	ZRange    ZRange
-	ZArray    []float64
-	MRange    MRange    // optional
-	MArray    []float64 // optional
+	Box    Box
+	Points []Point
+	ZRange ZRange
+	ZArray []float64
+	MRange MRange    // optional
+	MArray []float64 // optional
 }
 
 func ReadMultiPointZ(r io.Reader) (mp *MultiPointZ, err error) {

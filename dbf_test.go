@@ -1,6 +1,5 @@
 package shapefile
 
-
 import (
 	"os"
 	"testing"
@@ -8,7 +7,7 @@ import (
 
 const dbf_test_fn = "test/Geometrie_Wahlkreise_18DBT.dbf"
 
-func TestDBFHeadSimple(t * testing.T) {
+func TestDBFHeadSimple(t *testing.T) {
 	file, _ := os.Open(dbf_test_fn)
 	defer file.Close()
 	hdr, err := NewDBFFileHeader(file)
@@ -24,7 +23,7 @@ func TestDBFHeadSimple(t * testing.T) {
 	}
 }
 
-func TestDBFSimple(t * testing.T) {
+func TestDBFSimple(t *testing.T) {
 	file, _ := os.Open(dbf_test_fn)
 	defer file.Close()
 	f, err := NewDBFFile(file)
@@ -42,26 +41,25 @@ func TestDBFSimple(t * testing.T) {
 		t.Errorf("fieldname 3 not LAND_NAME")
 	}
 
-	if 299 != len(f.Entries){
-	 t.Errorf("incorrect number of entries: %d", len(f.Entries))
+	if 299 != len(f.Entries) {
+		t.Errorf("incorrect number of entries: %d", len(f.Entries))
 	}
 
-//	for _, fd := range f.FieldDescriptors {
-//		println(fd.String())
-//	}
+	//	for _, fd := range f.FieldDescriptors {
+	//		println(fd.String())
+	//	}
 
-//	for _, entry := range f.Entries {
-//		for _, e := range entry {
-//			switch e.(type) {
-//			case string:
-//				println(e.(string))
-//			case int64:
-//				println(e.(int64))
-//			default:
-//				println("?")
-//			}
-//		}
-//	}
-
+	//	for _, entry := range f.Entries {
+	//		for _, e := range entry {
+	//			switch e.(type) {
+	//			case string:
+	//				println(e.(string))
+	//			case int64:
+	//				println(e.(int64))
+	//			default:
+	//				println("?")
+	//			}
+	//		}
+	//	}
 
 }
