@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+// DBF is documented here: http://www.clicketyclick.dk/databases/xbase/format/dbf.html
+
 type DBFFile struct {
 	DBFFileHeader    *DBFFileHeader
 	FieldDescriptors []FieldDescriptor
@@ -72,6 +74,12 @@ func (dbf *DBFFile) readEntries(r io.Reader) (err error) {
 				if entry[i], err = strconv.ParseInt(numberStr, 10, 64); err != nil {
 					return
 				}
+			case Float:
+				numberStr := strings.TrimLeft((string)(rawField), " ")
+				if entry[i], err = strconv.ParseFloat(numberStr, 64); err != nil {
+					return
+				}
+
 			default:
 				err = fmt.Errorf("unsupported type: %c", desc.FieldType)
 			}
