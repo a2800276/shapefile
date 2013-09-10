@@ -70,10 +70,15 @@ func (dbf *DBFFile) readEntries(r io.Reader) (err error) {
 			case Character:
 				entry[i] = (string)(rawField)
 			case Number:
-				numberStr := strings.TrimLeft((string)(rawField), " ")
-				if entry[i], err = strconv.ParseInt(numberStr, 10, 64); err != nil {
-					return
+				if desc.DecimalCount == 0 {
+					numberStr := strings.TrimLeft((string)(rawField), " ")
+					if entry[i], err = strconv.ParseInt(numberStr, 10, 64); err != nil {
+						return
+					}
+					break
 				}
+				// handle it like a float ...
+				fallthrough
 			case Float:
 				numberStr := strings.TrimLeft((string)(rawField), " ")
 				if entry[i], err = strconv.ParseFloat(numberStr, 64); err != nil {

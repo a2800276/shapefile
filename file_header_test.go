@@ -59,21 +59,26 @@ type tttt struct {
 	A ttt
 }
 
+func check(t *testing.T, should int32, is int32) {
+	if is != should {
+		t.Errorf("unexpected value, is: %d should: %d", is, should)
+	}
+}
 func TestBinaryTesting(t *testing.T) {
 	file, _ := os.Open(testfile)
 	defer file.Close()
 	test := tttt{}
 	binary.Read(file, binary.LittleEndian, &test)
-	println(test.X)
-	println(test.A.X)
-	println(test.A.Y)
+	check(t, 170328064, test.X)
+	check(t, 1152472763, test.A.X)
+	check(t, 1096022308, test.A.Y)
 }
 
 func TestLoadShapefile(t *testing.T) {
 	file, _ := os.Open(testfile)
 	defer file.Close()
 	s, _ := NewShapefile(file)
-	if 299 != len(s.records) {
+	if 299 != len(s.Records) {
 		t.Fail()
 	}
 }

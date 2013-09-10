@@ -6,6 +6,21 @@ import (
 )
 
 const dbf_test_fn = "test/Geometrie_Wahlkreise_18DBT.dbf"
+const dbf_test2_fn = "test/ne_50m_admin_0_countries.dbf"
+
+func TestDBFSimple2(t *testing.T) {
+	// dbf parser barfed on something in this file,
+	// start debug ...
+	file, err := os.Open(dbf_test2_fn)
+	if err != nil {
+		t.Errorf("Failed opening file: %s", err.Error())
+	}
+	_, err = NewDBFFile(file)
+
+	if err != nil {
+		t.Error(err)
+	}
+}
 
 func TestDBFHeadSimple(t *testing.T) {
 	file, _ := os.Open(dbf_test_fn)

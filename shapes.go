@@ -135,11 +135,11 @@ func readPartsPoints(r io.Reader) (parts []int32, points []Point, err error) {
 }
 
 type PolyLine struct {
-	Box       Box
-	NumParts  int32
-	NumPoints int32
-	Parts     []int32
-	Points    []Point
+	Box Box
+	//	NumParts  int32
+	//	NumPoints int32
+	Parts  []int32
+	Points []Point
 }
 
 func ReadPolyLine(r io.Reader) (pl *PolyLine, err error) {
@@ -156,8 +156,8 @@ func ReadPolyLine(r io.Reader) (pl *PolyLine, err error) {
 
 func (p *PolyLine) String() string {
 	str := fmt.Sprintf("Box: \n%s", p.Box.String())
-	str += fmt.Sprintf("NumParts: %d\n", p.NumParts)
-	str += fmt.Sprintf("NumPoints: %d\n", p.NumPoints)
+	//str += fmt.Sprintf("NumParts: %d\n", p.NumParts)
+	//str += fmt.Sprintf("NumPoints: %d\n", p.NumPoints)
 	for i, p := range p.Parts {
 		str += fmt.Sprintf("part %d : %d\n", i, p)
 	}
@@ -173,8 +173,8 @@ type Polygon struct {
 
 func (p *Polygon) String() string {
 	str := fmt.Sprintf("Box: %s\n", p.Box.String())
-	str += fmt.Sprintf("NumParts: %d\n", p.NumParts)
-	str += fmt.Sprintf("NumPoints: %d\n", p.NumPoints)
+	//str += fmt.Sprintf("NumParts: %d\n", p.NumParts)
+	//str += fmt.Sprintf("NumPoints: %d\n", p.NumPoints)
 	for i, p := range p.Parts {
 		str += fmt.Sprintf("part %d : %d\n", i, p)
 	}

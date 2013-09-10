@@ -5,13 +5,13 @@ import (
 )
 
 type Shapefile struct {
-	header  *MainFileHeader
-	records []*Record
+	Header  *MainFileHeader
+	Records []*Record
 }
 
 type Record struct {
-	header  *MainFileRecordHeader
-	content RecordContent
+	Header  *MainFileRecordHeader
+	Content RecordContent
 }
 
 type RecordContent interface{}
@@ -24,8 +24,8 @@ func NewShapefile(rdr io.Reader) (s *Shapefile, err error) {
 		return
 	}
 
-	s.header = h
-	i := s.header.FileLength - 50 // length of header = 100 bytes = 50 words
+	s.Header = h
+	i := s.Header.FileLength - 50 // length of header = 100 bytes = 50 words
 	var rh *MainFileRecordHeader
 	var rec *Record
 	for {
@@ -37,11 +37,11 @@ func NewShapefile(rdr io.Reader) (s *Shapefile, err error) {
 		}
 		i = i - rh.ContentLength - 4
 		rec = &Record{}
-		rec.header = rh
-		if rec.content, err = RecordRecordContent(rdr); err != nil {
+		rec.Header = rh
+		if rec.Content, err = RecordRecordContent(rdr); err != nil {
 			return
 		}
-		s.records = append(s.records, rec)
+		s.Records = append(s.Records, rec)
 	}
 	return
 }
